@@ -1,6 +1,4 @@
 const {Router} = require("express");
-const config = require("config");
-const shortId = require("shortid");
 const Book = require("../../models/Book");
 const router = Router();
 const auth = require("../../middleware/auth.middleware");
@@ -44,15 +42,18 @@ router.delete("/:id", auth, async (req, res) => {
 
 router.put("/:id", auth, async (req, res) => {
     try {
+        const fetchedBook = await Book.findById(req.params.id);
         const book = new Book({ 
-            title: req.body.title,
-            author: req.body.author,
-            pages: req.body.pages,
-            isbn: req.body.isbn
+            _id: fetchedBook.id,
+            title: req.body.title ? req.body.title : fetchedBook.title,
+            author: req.body.author ? req.body.author : fetchedBook.author,
+            pages: req.body.pages ? req.body.pages : fetchedBook.pages,
+            isbn: req.body.isbn ? req.body.isbn : fetchedBook.isbn
         });
         const updatedBook = await Book.findByIdAndUpdate(req.params.id, book, {new: true});
         res.json({message: "Book is updated", updatedBook});
     } catch (e) {
+        console.log(e.message);
         res.status(500).json({ message: "Something went wrong, try again" });
     }
 });
