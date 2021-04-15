@@ -1,37 +1,51 @@
 const express = require("express");
+const app = express();
 const mongoose = require("mongoose");
 const config = require("config");
-//const exphbs = require("express-handlebars");
-//const items = require("./storage");
-
-const app = express();
+const server = require("http").createServer(app); //
+const io = require("socket.io")(server, {
+    cors: {
+      origin: "http://localhost:3000",
+      methods: ["GET", "POST", "DELETE", "PUT"]
+    }
+  }); 
 
 // Body parser middleware.
 app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: false }));
 
-
-app.use("/api/auth", require("./routes/api/auth.routes"));
-app.use("/api/book", require("./routes/api/book.routes"));
-
-/*
-// Handlebars middleware.
-app.engine("handlebars", exphbs({ defaultLayout: "main" }));
-app.set("view engine", "handlebars");
-
-app.use(express.static(__dirname + "/public"));
-
-app.get("/", (req, res) => {
-    res.render("index", {
-        title: "Book List",
-        items
-    });
-});
-
-app.use("/api/members", require("./routes/api/items.routes"));
-*/
+//app.use("/api/auth", require("./routes/api/auth.routes"));
+//app.use("/api/book", require("./routes/api/book.routes"));
 
 const port = process.env.PORT || 5000;
+
+const registerBookHandlers = require("./handlers/book.handler");
+const registerAuthHandlers = require("./handlers/auth.handler");
+
+io.use((socket, next) => {
+  console.log("");
+  console.log("Socket.io middleware");
+  const token = socket.handshake.auth.token;
+  if (token) {
+    console.log(token);
+  }
+  next();
+});
+
+const onConnection = (socket) => {
+  registerBookHandlers(io, socket);
+  registerAuthHandlers(io, socket);
+
+  socket.on("break", (reason) => { //DELETE THIS 
+    console.log(reason.message);
+  });
+
+  socket.on("disconnect", (reason) => {
+    console.log(reason);
+  });
+}
+
+io.on("connection", onConnection);
 
 async function startServer() {
     try {
@@ -40,7 +54,8 @@ async function startServer() {
             useUnifiedTopology: true,
             useCreateIndex: true
         });
-        app.listen(port, () => console.log("Listening on " + port));
+        //app.listen(port, () => console.log("Listening on " + port));
+        server.listen(port, () => console.log("Listening on " + port));
 
     } catch (e) {
         console.log("Server error", e.message);

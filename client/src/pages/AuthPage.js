@@ -2,6 +2,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useMessage } from '../hooks/authmsg.hook';
 import { useHttp } from '../hooks/http.hook';
+import {socket} from '../socket'
 
 export const AuthPage = () => {
     const auth = useContext(AuthContext);
@@ -20,23 +21,65 @@ export const AuthPage = () => {
         window.M.updateTextFields();
     }, []);
 
+    useEffect(() => {
+        if (socket.disconnected) {
+            socket.connect();
+        }
+        return () => {
+            socket.emit("break", {message: "BookPage disconnected"})
+            socket.disconnect()
+        };
+    }, []);
+
     const changeHandler = event => {
         setForm({ ...form, [event.target.name]: event.target.value })
     }
 
+    // Register handler for Socket.io API.
+    const registerHandler = async () => {
+        try {
+            socket.emit("user:register", {...form}, (callback) => {
+                if (callback.success) {
+                    message("User is created successfully. Please, press `Sign In` button");
+                } else {
+                    message(callback.message);
+                }
+            });
+        } catch (e) {}
+    };
+
+    // Register handler for REST API.
+    /*
     const registerHandler = async () => {
         try {
             const data = await request("/api/auth/register", "POST", {...form});
             message(data.message);
         } catch (e) {}
     };
+    */
 
+    // Login handler for Socket.io API.
+    const loginHandler = async () => {
+        try {
+            socket.emit("user:login", {...form}, (callback) => {
+                if (callback.success) {
+                    auth.login(callback.token, callback.userId);
+                } else {
+                    message(callback.message);
+                }
+            });
+        } catch (e) {}
+    };
+
+    // Login handler for REST API.
+    /*
     const loginHandler = async () => {
         try {
             const data = await request("/api/auth/login", "POST", {...form});
             auth.login(data.token, data.userId);
         } catch (e) {}
     };
+    */
 
     return (
         <div className="row">

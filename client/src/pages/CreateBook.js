@@ -2,6 +2,7 @@ import React, {useState, useEffect, useContext} from 'react';
 import {useHistory} from "react-router-dom";
 import {useHttp} from '../hooks/http.hook';
 import {AuthContext} from '../context/AuthContext';
+import {socket} from '../socket'
 
 
 export const CreateBookPage = () => {
@@ -16,17 +17,44 @@ export const CreateBookPage = () => {
         window.M.updateTextFields();
     }, []);
 
+    useEffect(() => {
+        if (socket.disconnected) {
+            socket.connect();
+        }
+        return () => {
+            socket.emit("break", {message: "CreateBook disconnected"})
+            socket.disconnect()
+        };
+    }, []);
+
     const changeHandler = event => {
         setBook({ ...book, [event.target.name]: event.target.value })
     }
 
     const createHandler = async () => {
         try {
+            socket.emit("user:auth", auth.token, (callback) => {
+                if (callback.ok) {
+                    socket.emit("book:create", book, callback.userId, (callback) => {  
+                        if (callback.isCreated) {
+                            history.push(`/detail/${callback.book._id}`);
+                        } else {
+                            console.log(callback.message);
+                        }
+                    });
+                } else {
+                    console.log(callback.message);
+                }
+            });
+        } catch (e) {}
+        /*
+        try {
             const data = await request("/api/book/", "POST", {...book}, { 
                 Authorization: `Bearer ${auth.token}`
              });
             history.push(`/detail/${data.book._id}`);
         } catch (e) {}
+        */
     };
 
     const pressHandler = async event => {
