@@ -1,2 +1,2 @@
 # MPP-mernProject
- MERN project
+ MERN project, bookstore, GraphQL API
