@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const config = require("config");
-const graphqlHTTP = require("express-graphql");
+const { graphqlHTTP } = require('express-graphql');
 const schema = require("./schema/schema");
 
 const app = express();
@@ -13,7 +13,8 @@ app.use("/api/auth", require("./routes/api/auth.routes"));
 app.use("/api/book", require("./routes/api/book.routes"));
 
 app.use("/graphql", graphqlHTTP({
-    schema
+    schema,
+    graphiql: true
 }));
 
 const port = process.env.PORT || 5000;
