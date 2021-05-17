@@ -6,8 +6,7 @@ import { gql, useMutation } from '@apollo/client';
 
 export const CreateBookPage = () => {
     const history = useHistory();
-    const {auth, userId} = useContext(AuthContext);
-    const {request} = useHttp();
+    const {userId} = useContext(AuthContext);
     const [book, setBook] = useState({
         title: "", author: "", pages: 0, isbn: ""
     });
@@ -35,28 +34,16 @@ export const CreateBookPage = () => {
         setBook({ ...book, [event.target.name]: event.target.value })
     }
 
-    /*
-    const createHandler = async () => {
-        try {
-            const data = await request("/api/book/", "POST", {...book}, { 
-                Authorization: `Bearer ${auth.token}`
-             });
-            history.push(`/detail/${data.book._id}`);
-        } catch (e) {}
-    };
-    */
     const createHandler = async () => {
         addBook();
     };
 
-    
     useEffect(() => {
         if (called && loading === false && data) {
             console.log(data);
             history.push(`/detail/${data.addBook.id}`);
         }
     }, [called, data, history, loading]);
-    
 
     const pressHandler = async event => {
         if (event.key === "Enter") {

@@ -94,6 +94,7 @@ const Mutation = new GraphQLObjectType({
                 id: {type: new GraphQLNonNull(GraphQLID)}
             },
             async resolve(parent, args) {
+                console.log(args.id);
                 return await Book.findByIdAndDelete(args.id);
             }
         },

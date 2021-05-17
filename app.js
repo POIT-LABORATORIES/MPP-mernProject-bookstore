@@ -14,7 +14,6 @@ app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/api/auth", require("./routes/api/auth.routes"));
-app.use("/api/book", require("./routes/api/book.routes"));
 
 app.use("/graphql", graphqlHTTP({
     schema,

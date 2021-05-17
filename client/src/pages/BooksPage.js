@@ -3,15 +3,11 @@ import { AuthContext } from '../context/AuthContext';
 import { useHttp } from '../hooks/http.hook';
 import {Loader} from '../components/Loader';
 import {BooksList} from '../components/BooksList';
-import { useQuery, gql } from '@apollo/client';
-const util = require('util')
+import { useQuery, gql, useMutation } from '@apollo/client';
 
 export const BooksPage = () => {
     const [books, setBooks] = useState([]);
-    //const {loading, request} = useHttp();
-    const {request} = useHttp();
-    const {token, userId} = useContext(AuthContext);
-    let bookId;
+    const {userId} = useContext(AuthContext);
 
     const getBooksQuery = gql`
     {
@@ -30,34 +26,21 @@ export const BooksPage = () => {
 
     if (error) console.log(`Error: ${error.message}`);
 
+    
     const deleteBookMutation = gql`
-    mutation{
-        deleteBook("${bookId}"){
-            id
+    mutation DeleteBook($id: ID!) {
+        deleteBook(id: $id) {
+          id
         }
-    }
+      }
     `;
 
-    const deleteBook = useCallback(async (id) => {
-        bookId = id;
-        
-    }, []);
+    const [deleteBookFunc] = useMutation(deleteBookMutation);
 
-    /*
-    const deleteBook = useCallback(async (bookId) => {
-        try {
-            const fetched = await request(`api/book/${bookId}`, "DELETE", null, {
-                Authorization: `Bearer ${token}`
-            });
-                
-            let updatedBooks = books.filter(book => book.id !== fetched._id);
-            console.log(updatedBooks);
-            setBooks(updatedBooks);
-        } catch (e) {
-            console.log(e.message);
-        }
-    }, [books, request, token]);
-    */
+    const deleteBook = (id) => {
+        deleteBookFunc({ variables: { id: id } });
+        setBooks(books.filter(book => book.id !== id));
+    };
 
     const getBooks = useCallback(() => {
         if(loading === false && data){

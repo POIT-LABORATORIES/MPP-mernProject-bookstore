@@ -1,6 +1,5 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
-import Delete from '@material-ui/icons/Delete';
 
 export const BooksList = ({ books, deleteBook }) => {
     if (!books.length) {
