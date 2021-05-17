@@ -2,15 +2,30 @@ import React, {useState, useEffect, useContext} from 'react';
 import {useHistory} from "react-router-dom";
 import {useHttp} from '../hooks/http.hook';
 import {AuthContext} from '../context/AuthContext';
-
+import { gql, useMutation } from '@apollo/client';
 
 export const CreateBookPage = () => {
     const history = useHistory();
-    const auth = useContext(AuthContext);
+    const {auth, userId} = useContext(AuthContext);
     const {request} = useHttp();
     const [book, setBook] = useState({
         title: "", author: "", pages: 0, isbn: ""
     });
+
+    const addBookMutation = gql`
+    mutation{
+        addBook(
+            title: "${book.title}", 
+            author: "${book.author}", 
+            pages: "${book.pages}", 
+            isbn: "${book.isbn}", 
+            owner: "${userId}"){
+            id
+        }
+    }
+    `;
+
+    const [addBook, { data, loading, called }] = useMutation(addBookMutation);
 
     useEffect(() => {
         window.M.updateTextFields();
@@ -20,6 +35,7 @@ export const CreateBookPage = () => {
         setBook({ ...book, [event.target.name]: event.target.value })
     }
 
+    /*
     const createHandler = async () => {
         try {
             const data = await request("/api/book/", "POST", {...book}, { 
@@ -28,6 +44,19 @@ export const CreateBookPage = () => {
             history.push(`/detail/${data.book._id}`);
         } catch (e) {}
     };
+    */
+    const createHandler = async () => {
+        addBook();
+    };
+
+    
+    useEffect(() => {
+        if (called && loading === false && data) {
+            console.log(data);
+            history.push(`/detail/${data.addBook.id}`);
+        }
+    }, [called, data, history, loading]);
+    
 
     const pressHandler = async event => {
         if (event.key === "Enter") {

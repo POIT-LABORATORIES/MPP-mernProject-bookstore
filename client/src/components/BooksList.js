@@ -34,17 +34,17 @@ export const BooksList = ({ books, deleteBook }) => {
             <tbody>
                 {books.map((book) => {
                     return (
-                        <tr key={book._id}>
+                        <tr key={book.id}>
                             <td>{book.title}</td>
                             <td>{book.author}</td>
                             <td>{book.pages}</td>
                             <td>{book.isbn}</td>
                             <td>
-                                <Link to={`/detail/${book._id}`}>Open</Link>
+                                <Link to={`/detail/${book.id}`}>Open</Link>
                             </td>
                             <td>
                                 <Link to={""} onClick={deleteHandler}>
-                                    <button className="waves-effect waves-light btn-small red accent-3" data-id={book._id}>
+                                    <button className="waves-effect waves-light btn-small red accent-3" data-id={book.id}>
                                         X
                                     </button>
                                 </Link>
